@@ -1,12 +1,19 @@
 package com.itb.mif3an.pizzariabomgosto.model.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 
 @Entity
@@ -28,7 +35,15 @@ public class Produto {
 	@Column(nullable = true, columnDefinition = "DECIMAL(5,2)")
 	private double precoCompra;
 	private boolean codStatus;
+	
+	@ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+	@JoinColumn(name = "categoria_id", referencedColumnName = "id", nullable = true)
+	private Categoria categoria;
 
+	
+	@OneToMany(mappedBy = "produto",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+	private List<ItemPedido> itenspedido = new ArrayList<>();
 	// atributos de apoio
 	
 	//@Transient : Anotação para os atributos que não representam colunas no banco de dados
@@ -88,9 +103,18 @@ public class Produto {
 	public void setCodStatus(boolean codStatus) {
 		this.codStatus = codStatus;
 	}
+	public Categoria getCategoria() {
+		return categoria;
+	}
+	public void setCategoria(Categoria categoria) {
+		this.categoria = categoria;
+	}
+	
+	
 	public String getMensagemErro() {
 		return mensagemErro;
 	}
+	
 	@Override 		/*<--Metodo sobescrito - herança*/
 	public int hashCode() {
 		return Objects.hash(id);
@@ -111,7 +135,7 @@ public class Produto {
 	public boolean validarProduto() {
 		if(nome == null || nome.isEmpty()) {
 			mensagemErro += "O nome do produto é obrigatório:";
-		}
+	}	
 		if(precoCompra < 0) {
 			precoCompra = 0;
 			mensagemErro += "O preço de compra deve ser maior que zero:";
